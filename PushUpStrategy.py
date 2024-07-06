@@ -7,21 +7,21 @@ class PushUpStrategy(IExerciseAnalysisStrategy):
 
     def __init__(self, landmarks):
 
-        self.l_elbow_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.l_elbow_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.LEFT_WRIST,
                                                                             self.mp_pose.LEFT_ELBOW,
                                                                             self.mp_pose.LEFT_SHOULDER)
-        self.r_elbow_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.r_elbow_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.RIGHT_WRIST,
                                                                             self.mp_pose.RIGHT_ELBOW,
                                                                             self.mp_pose.RIGHT_SHOULDER)
         
-        self.l_body_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.l_body_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.LEFT_SHOULDER,
                                                                             self.mp_pose.LEFT_HIP,
                                                                             self.mp_pose.LEFT_ANKLE)
 
-        self.r_body_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.r_body_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.RIGHT_SHOULDER,
                                                                             self.mp_pose.RIGHT_HIP,
                                                                             self.mp_pose.RIGHT_ANKLE)
@@ -30,7 +30,7 @@ class PushUpStrategy(IExerciseAnalysisStrategy):
 
         self.body_angle = (self.l_body_angle + self.r_body_angle) / 2
 
-    def is_correct(self):
+    def correct_form(self):
         pushup_guide = ""
 
         if 70 <= self.elbow_angle <= 100 and 160 <= self.body_angle <= 200:

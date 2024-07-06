@@ -16,22 +16,22 @@ class LeftBicepCurlStrategy(IExerciseAnalysisStrategy):
         
         self.elbow_l = landmarks[self.mp_pose.LEFT_ELBOW.value]
 
-        self.l_elbow_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.l_elbow_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.LEFT_SHOULDER,
                                                                             self.mp_pose.LEFT_ELBOW,
                                                                             self.mp_pose.LEFT_WRIST)
         
-        self.l_shoulder_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.l_shoulder_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.LEFT_ELBOW,
                                                                             self.mp_pose.LEFT_SHOULDER,
                                                                             self.mp_pose.LEFT_HIP)
         
         self.l_shoulder_wrist = AngleCalculator.calculate_horizontal_distance(self.shoulder_l, self.wrist_l, 3)
 
-    def is_correct(self):
+    def correct_form(self):
         bicep_guide = ""
 
-        if 20 < self.l_elbow_angle < 60 and 10 < self.l_shoulder_angle < 20 and 0.1 >= self.l_shoulder_wrist > 0 :
+        if 20 < self.l_elbow_angle < 60 and 0.1 >= self.l_shoulder_wrist > -0.1 : #and 10 < self.l_shoulder_angle < 20 
             bicep_guide = 'Keep Going!'
 
         else:
@@ -43,13 +43,13 @@ class LeftBicepCurlStrategy(IExerciseAnalysisStrategy):
             #Condition 2
             if 0.1 < self.l_shoulder_wrist:
                 bicep_guide += 'Move your wrist to the Right\n'
-            if 0.05 > self.l_shoulder_wrist:
+            if -0.1 > self.l_shoulder_wrist:
                 bicep_guide += 'Move your wrist to the Left\n'
             # #Condition 3
-            if 10 > self.l_shoulder_angle:
-                bicep_guide += 'Raise your elbow\n'
-            if 20 < self.l_shoulder_angle:
-                bicep_guide += 'Lower your elbow\n'    
+            #if 10 > self.l_shoulder_angle:
+            #    bicep_guide += 'Raise your elbow\n'
+            #if 20 < self.l_shoulder_angle:
+             #   bicep_guide += 'Lower your elbow\n'    
 
         print(self.l_shoulder_wrist)
         return bicep_guide

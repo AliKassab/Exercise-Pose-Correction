@@ -26,17 +26,17 @@ class SquatStrategy(IExerciseAnalysisStrategy):
         self.r_knee_foot = AngleCalculator.calculate_horizontal_distance(self.knee_r, self.foot_r, 3)
         self.l_knee_foot = AngleCalculator.calculate_horizontal_distance(self.knee_l, self.foot_l, 3)
 
-        self.l_hip_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.l_hip_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.LEFT_SHOULDER,
                                                                             self.mp_pose.LEFT_HIP,
                                                                             self.mp_pose.LEFT_KNEE)
-        self.r_hip_angle = AngleCalculator.calculate_angle_from_landmarks(landmarks,
+        self.r_hip_angle = AngleCalculator.calculate_landmarks_angle(landmarks,
                                                                             self.mp_pose.RIGHT_SHOULDER,
                                                                             self.mp_pose.RIGHT_HIP,
                                                                             self.mp_pose.RIGHT_KNEE)
         self.hip_angle = (self.l_hip_angle + self.r_hip_angle) / 2
 
-    def is_correct(self):
+    def correct_form(self):
         squat_guide = ""
 
         if 60 < self.hip_angle < 120 and self.l_knee_hip <= 0.2 and self.r_knee_hip <= 0.2 and self.l_knee_foot <= 0.1 and self.r_knee_foot <= 0.1:
