@@ -25,7 +25,7 @@ landmarks and no frames are ever uploaded, and there is no backend to upload the
 
 ## Prerequisites
 
-- Node.js 20 or higher
+- Node.js 20.19+ or 22.12+ (required by Vite 8)
 - A working webcam
 
 ## Running locally
