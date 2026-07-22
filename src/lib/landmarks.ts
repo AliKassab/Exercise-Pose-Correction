@@ -1,5 +1,4 @@
-// MediaPipe pose landmark indices, mirroring mp.solutions.pose.PoseLandmark.
-
+/** MediaPipe pose landmark indices, mirroring mp.solutions.pose.PoseLandmark. */
 export const POSE = {
     LEFT_SHOULDER: 11,
     RIGHT_SHOULDER: 12,
@@ -15,4 +14,6 @@ export const POSE = {
     RIGHT_ANKLE: 28,
     LEFT_FOOT_INDEX: 31,
     RIGHT_FOOT_INDEX: 32
-};
+} as const;
+
+export type PoseLandmarkIndex = (typeof POSE)[keyof typeof POSE];

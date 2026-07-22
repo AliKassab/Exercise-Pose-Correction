@@ -1,39 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Exercise Pose Correction</title>
-    <meta name="description" content="Real-time exercise form correction in your browser using MediaPipe pose detection.">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Real-Time Pose Detection</h1>
-        <p class="subtitle">Form correction for squats, bicep curls and push-ups — running entirely in your browser.</p>
-
-        <div class="stage" id="stage">
-            <video id="video" playsinline muted></video>
-            <canvas id="output" width="640" height="480"></canvas>
-        </div>
-
-        <div class="controls">
-            <button id="startButton">Start Video Feed</button>
-            <select id="exerciseSelect" style="display: none;">
-                <option value="1">Squat</option>
-                <option value="2">Left Bicep Curl</option>
-                <option value="3">Right Bicep Curl</option>
-                <option value="4">Push Up</option>
-            </select>
-        </div>
-
-        <p class="status" id="status">Press start and allow camera access. Video is processed on your device and never uploaded.</p>
-
-        <footer>
-            <a href="https://github.com/AliKassab/Exercise-Pose-Correction">Source on GitHub</a>
-        </footer>
-    </div>
-
-    <script type="module" src="js/app.js"></script>
-</body>
+    <meta
+      name="description"
+      content="Real-time exercise form correction in your browser using MediaPipe pose detection."
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

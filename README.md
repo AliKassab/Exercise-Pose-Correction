@@ -4,7 +4,7 @@ A real-time exercise form correction application that uses computer vision and p
 
 It ships in two forms:
 
-- **Web version** (`index.html`, `css/`, `js/`) — runs entirely in the browser with MediaPipe Tasks Vision. Static files, no server, uses the visitor's own camera. This is what gets hosted, live at <https://www.alikassab.dev/Exercise-Pose-Correction>.
+- **Web version** (`src/`) — a React + TypeScript single-page app that runs MediaPipe Tasks Vision entirely in the browser, using the visitor's own camera. This is what gets hosted, live at <https://www.alikassab.dev/Exercise-Pose-Correction>.
 - **Desktop version** (`main.py`, `templates/desktop.html`) — the original Flask + OpenCV app, which captures the camera of the machine running it.
 
 ## Features
@@ -21,37 +21,50 @@ It ships in two forms:
 
 ## Technologies Used
 
-- **Python** - Backend server
-- **Flask** - Web framework
-- **OpenCV** - Computer vision and video processing
-- **MediaPipe** - Pose detection and landmark tracking
-- **HTML/CSS/JavaScript** - Frontend interface
+**Web version**
+
+- **React 19 + TypeScript** — component UI, with the pose pipeline isolated in a hook
+- **Vite** — dev server and production build
+- **Tailwind CSS** — styling
+- **MediaPipe Tasks Vision** — pose detection in WebAssembly with a GPU delegate
+- **GitHub Actions + GitHub Pages** — build and deploy on every push to `main`
+
+**Desktop version**
+
+- **Python / Flask** — local server and MJPEG stream
+- **OpenCV** — video capture and frame processing
+- **MediaPipe / NumPy** — pose detection and landmark maths
 
 ## Prerequisites
 
-Before running the application, ensure you have the following installed:
-
-- Python 3.7 or higher
-- pip (Python package manager)
+- Node.js 20 or higher, for the web version
+- Python 3.7 or higher and pip, for the desktop version
 - A working webcam
 
 ## Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/AliKassab/Exercise-Pose-Correction.git
-   cd Exercise-Pose-Correction
-   ```
+Clone the repository:
 
-2. Install the required dependencies:
-   ```bash
-   pip install flask flask-cors opencv-python mediapipe numpy
-   ```
+```bash
+git clone https://github.com/AliKassab/Exercise-Pose-Correction.git
+```
+
+For the web version, install the Node dependencies:
+
+```bash
+npm install
+```
+
+For the desktop version, install the Python dependencies:
+
+```bash
+pip install flask flask-cors opencv-python mediapipe numpy
+```
 
 ## Usage (desktop version)
 
 Note that `main.py` reads the camera of the machine it runs on, which is why the hosted
-site uses the browser build in `docs/` instead.
+site uses the React build instead.
 
 1. Run the application:
    ```bash
@@ -77,37 +90,60 @@ site uses the browser build in `docs/` instead.
 
 ## Web Version (hosted)
 
-The browser build lives at the repository root and needs no Python and no server. Every
-frame is processed on the visitor's device — no video is uploaded anywhere.
-
-Run it locally with any static file server:
+A React single-page app; every frame is processed on the visitor's device, and no video
+is uploaded anywhere.
 
 ```bash
-python -m http.server 5173
+npm install
+npm run dev
 ```
 
-Then open `http://localhost:5173`. A camera requires a secure context, so it works on
-`localhost` and over HTTPS, but not from a `file://` path.
+The dev server prints a URL under `/Exercise-Pose-Correction/`, matching the sub-path the
+site is deployed to. A camera requires a secure context, so this works on `localhost` and
+over HTTPS, but not from a `file://` path.
+
+Other scripts:
+
+| Script | Purpose |
+| --- | --- |
+| `npm run build` | Type-check, copy the WASM runtime, and build to `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `npm run typecheck` | `tsc --noEmit` |
 
 ### Deploying to GitHub Pages
 
-Under **Settings → Pages**, the source is the `main` branch, `/ (root)` folder. All asset
-paths are relative, so the site works from any sub-path.
+`.github/workflows/deploy.yml` builds and publishes on every push to `main`. Under
+**Settings → Pages**, the source must be set to **GitHub Actions**.
+
+`vite.config.ts` sets `base` to `/Exercise-Pose-Correction/`, since the site is served
+from a sub-path rather than a domain root.
+
+The MediaPipe WASM runtime is copied out of `node_modules` into `public/wasm/` at build
+time, so the deployed site serves it itself, version-locked to the installed package,
+instead of depending on a CDN. Only the model file is fetched from Google's bucket.
 
 ### Web version structure
 
 ```
-index.html                     # Web interface
-css/style.css                  # Styles
-js/
-├── app.js                     # Render loop and UI wiring (replaces main.py)
-├── poseDetector.js            # MediaPipe Tasks Vision + getUserMedia
-├── angleCalculator.js         # Port of AngleCalculator.py
-├── landmarks.js               # Pose landmark indices
-└── strategies/                # Ports of the four exercise strategies
+index.html                     # Vite entry point
+src/
+├── main.tsx                   # React root
+├── App.tsx                    # Page layout and exercise selection state
+├── components/                # CameraStage, ExerciseControls, StatusMessage
+├── hooks/
+│   └── usePoseCorrection.ts   # Camera, landmarker and render loop (replaces main.py)
+└── lib/
+    ├── angleCalculator.ts     # Port of AngleCalculator.py
+    ├── landmarks.ts           # Pose landmark indices
+    ├── types.ts               # Landmark and strategy interfaces
+    └── strategies/            # Ports of the four exercise strategies
 ```
 
-The strategy ports are line-for-line equivalent to the Python originals: across 200
+The render loop deliberately lives outside React state: it runs at frame rate, and
+re-rendering per frame would be wasteful. The selected exercise is mirrored into a ref so
+switching exercises does not restart the loop.
+
+The strategy ports are behaviourally identical to the Python originals: across 200
 randomized landmark sets, all four strategies produce byte-identical guidance text in
 both implementations.
 
@@ -120,7 +156,7 @@ The application uses the Strategy design pattern to implement different exercise
 3. **Form Correction**: The system calculates angles between key body points and provides real-time feedback
 4. **Visual Feedback**: Correction guidance is displayed directly on the video feed
 
-## Project Structure
+## Project Structure (desktop version)
 
 ```
 Exercise-Pose-Correction/
