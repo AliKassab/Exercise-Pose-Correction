@@ -3,6 +3,7 @@ import { CameraStage } from './components/CameraStage';
 import { ExerciseSelector } from './components/ExerciseSelector';
 import { FeedButton } from './components/FeedButton';
 import { StatusMessage } from './components/StatusMessage';
+import { VersionTag } from './components/VersionTag';
 import { usePoseCorrection } from './hooks/usePoseCorrection';
 import type { ExerciseId } from './lib/types';
 
@@ -47,13 +48,14 @@ export default function App() {
                 </div>
             </main>
 
-            <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+            <footer className="flex flex-col items-center gap-1.5 border-t border-slate-200 py-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
                 <a
                     href="https://github.com/AliKassab/Exercise-Pose-Correction"
                     className="font-medium hover:text-brand-500"
                 >
                     Source on GitHub
                 </a>
+                <VersionTag />
             </footer>
         </div>
     );

@@ -100,6 +100,11 @@ Under **Settings → Pages**, the source must be set to **GitHub Actions**.
 `vite.config.ts` sets `base` to `/Exercise-Pose-Correction/`, since the site is served
 from a sub-path rather than a domain root.
 
+It also injects the build stamp shown in the footer: the `version` from `package.json`
+plus the short commit SHA, taken from `GITHUB_SHA` in CI and from `git rev-parse` locally.
+The SHA links to that commit on GitHub, so a deployed page can always be traced back to
+the source it was built from. Bump `version` in `package.json` to change what is shown.
+
 The MediaPipe WASM runtime is copied out of `node_modules` into `public/wasm/` at build
 time, so the deployed site serves it itself, version-locked to the installed package,
 instead of depending on a CDN. Only the model file is fetched from Google's bucket.
