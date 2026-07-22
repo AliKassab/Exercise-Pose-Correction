@@ -18,6 +18,10 @@ interface UsePoseCorrectionResult {
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
     status: FeedStatus;
     message: string;
+    /** Current guidance lines, rendered as DOM rather than drawn on the canvas. */
+    guidance: string[];
+    /** False while the feed is live but nobody is in frame. */
+    poseDetected: boolean;
     start: () => Promise<void>;
     stop: () => void;
 }
@@ -38,8 +42,16 @@ export function usePoseCorrection(exerciseId: ExerciseId): UsePoseCorrectionResu
     const runningRef = useRef(false);
     // Read inside the render loop so switching exercises does not restart it.
     const exerciseIdRef = useRef<ExerciseId>(exerciseId);
+    // DrawingUtils is bound to a context, so it is built once rather than per frame.
+    const drawingUtilsRef = useRef<DrawingUtils | null>(null);
+    // Guidance only reaches React state when it actually changes, so a frame-rate
+    // loop does not trigger a frame-rate render.
+    const lastGuidanceRef = useRef<string>('');
+    const lastPoseDetectedRef = useRef(false);
 
     const [status, setStatus] = useState<FeedStatus>('idle');
+    const [guidance, setGuidance] = useState<string[]>([]);
+    const [poseDetected, setPoseDetected] = useState(false);
     const [message, setMessage] = useState(
         'Press start and allow camera access. Video is processed on your device and never uploaded.'
     );
@@ -48,22 +60,20 @@ export function usePoseCorrection(exerciseId: ExerciseId): UsePoseCorrectionResu
         exerciseIdRef.current = exerciseId;
     }, [exerciseId]);
 
-    const drawGuide = useCallback((ctx: CanvasRenderingContext2D, guide: string) => {
-        ctx.font = 'bold 22px ui-sans-serif, system-ui, sans-serif';
-        ctx.fillStyle = '#4ade80';
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
-        ctx.lineWidth = 4;
-        ctx.textBaseline = 'top';
-
-        let y = 18;
-        for (const line of guide.split('\n')) {
-            if (line.length === 0) {
-                continue;
-            }
-            ctx.strokeText(line, 18, y);
-            ctx.fillText(line, 18, y);
-            y += 34;
+    const publishPoseDetected = useCallback((detected: boolean) => {
+        if (detected === lastPoseDetectedRef.current) {
+            return;
         }
+        lastPoseDetectedRef.current = detected;
+        setPoseDetected(detected);
+    }, []);
+
+    const publishGuidance = useCallback((guide: string) => {
+        if (guide === lastGuidanceRef.current) {
+            return;
+        }
+        lastGuidanceRef.current = guide;
+        setGuidance(guide.split('\n').filter(line => line.length > 0));
     }, []);
 
     const renderLoop = useCallback(() => {
@@ -93,23 +103,28 @@ export function usePoseCorrection(exerciseId: ExerciseId): UsePoseCorrectionResu
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                 if (landmarks) {
-                    const drawingUtils = new DrawingUtils(ctx);
-                    drawingUtils.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, {
-                        color: '#ffffff',
-                        lineWidth: 2
+                    drawingUtilsRef.current ??= new DrawingUtils(ctx);
+                    drawingUtilsRef.current.drawConnectors(landmarks, PoseLandmarker.POSE_CONNECTIONS, {
+                        color: 'rgba(255, 255, 255, 0.85)',
+                        lineWidth: 3
                     });
-                    drawingUtils.drawLandmarks(landmarks, { color: '#38bdf8', radius: 3 });
+                    drawingUtilsRef.current.drawLandmarks(landmarks, { color: '#38bdf8', radius: 3 });
+
+                    publishPoseDetected(true);
 
                     const StrategyClass = exerciseStrategies[exerciseIdRef.current];
                     if (StrategyClass) {
-                        drawGuide(ctx, new StrategyClass(landmarks).correctForm());
+                        publishGuidance(new StrategyClass(landmarks).correctForm());
                     }
+                } else {
+                    publishPoseDetected(false);
+                    publishGuidance('');
                 }
             }
         }
 
         rafRef.current = requestAnimationFrame(renderLoop);
-    }, [drawGuide]);
+    }, [publishGuidance, publishPoseDetected]);
 
     /** Releases hardware and cancels the loop without touching React state. */
     const teardown = useCallback(() => {
@@ -129,12 +144,18 @@ export function usePoseCorrection(exerciseId: ExerciseId): UsePoseCorrectionResu
 
         const canvas = canvasRef.current;
         canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+        drawingUtilsRef.current = null;
+
+        lastGuidanceRef.current = '';
+        lastPoseDetectedRef.current = false;
     }, []);
 
     const stop = useCallback(() => {
         teardown();
         setStatus('idle');
-        setMessage('Stopped.');
+        setGuidance([]);
+        setPoseDetected(false);
+        setMessage('Camera stopped.');
     }, [teardown]);
 
     const start = useCallback(async () => {
@@ -199,5 +220,5 @@ export function usePoseCorrection(exerciseId: ExerciseId): UsePoseCorrectionResu
     // Uses teardown rather than stop so it never writes state after unmount.
     useEffect(() => teardown, [teardown]);
 
-    return { videoRef, canvasRef, status, message, start, stop };
+    return { videoRef, canvasRef, status, message, guidance, poseDetected, start, stop };
 }

@@ -1,45 +1,60 @@
 import { useState } from 'react';
 import { CameraStage } from './components/CameraStage';
-import { ExerciseControls } from './components/ExerciseControls';
+import { ExerciseSelector } from './components/ExerciseSelector';
+import { FeedButton } from './components/FeedButton';
 import { StatusMessage } from './components/StatusMessage';
 import { usePoseCorrection } from './hooks/usePoseCorrection';
 import type { ExerciseId } from './lib/types';
 
 export default function App() {
     const [exerciseId, setExerciseId] = useState<ExerciseId>(1);
-    const { videoRef, canvasRef, status, message, start, stop } = usePoseCorrection(exerciseId);
-
-    const isLive = status === 'running';
+    const { videoRef, canvasRef, status, message, guidance, poseDetected, start, stop } =
+        usePoseCorrection(exerciseId);
 
     return (
-        <main className="flex min-h-screen items-center justify-center bg-slate-800 p-6 text-white">
-            <div className="flex w-full max-w-3xl flex-col items-center text-center">
-                <h1 className="mb-2 text-3xl font-bold">Real-Time Pose Detection</h1>
-                <p className="mb-5 text-sm text-slate-400">
-                    Form correction for squats, bicep curls and push-ups — running entirely in your browser.
-                </p>
+        <div className="flex min-h-dvh flex-col">
+            <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center px-4 py-10 sm:px-6 sm:py-14">
+                <header className="mb-8 flex flex-col items-center text-center">
+                    <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        Runs entirely on your device
+                    </span>
 
-                <CameraStage videoRef={videoRef} canvasRef={canvasRef} isLive={isLive} />
+                    <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl">
+                        Real-Time Pose Detection
+                    </h1>
 
-                <ExerciseControls
-                    exerciseId={exerciseId}
-                    onExerciseChange={setExerciseId}
-                    isLive={isLive}
-                    isBusy={status === 'loading'}
-                    onToggle={isLive ? stop : start}
-                />
+                    <p className="mt-3 max-w-md text-sm text-pretty text-slate-600 sm:text-base dark:text-slate-400">
+                        Form correction for squats, bicep curls and push-ups, powered by on-device pose
+                        detection. No video ever leaves your browser.
+                    </p>
+                </header>
 
-                <StatusMessage status={status} message={message} />
+                <div className="w-full max-w-2xl">
+                    <CameraStage
+                        videoRef={videoRef}
+                        canvasRef={canvasRef}
+                        status={status}
+                        guidance={guidance}
+                        poseDetected={poseDetected}
+                    />
 
-                <footer className="mt-6 text-xs">
-                    <a
-                        href="https://github.com/AliKassab/Exercise-Pose-Correction"
-                        className="text-sky-400 hover:underline"
-                    >
-                        Source on GitHub
-                    </a>
-                </footer>
-            </div>
-        </main>
+                    <div className="mt-5 flex flex-col items-center gap-4">
+                        <ExerciseSelector exerciseId={exerciseId} onChange={setExerciseId} />
+                        <FeedButton status={status} onToggle={status === 'running' ? stop : start} />
+                        <StatusMessage status={status} message={message} />
+                    </div>
+                </div>
+            </main>
+
+            <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                <a
+                    href="https://github.com/AliKassab/Exercise-Pose-Correction"
+                    className="font-medium hover:text-brand-500"
+                >
+                    Source on GitHub
+                </a>
+            </footer>
+        </div>
     );
 }
