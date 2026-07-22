@@ -1,33 +1,26 @@
 import { AngleCalculator } from '../angleCalculator';
 import { POSE } from '../landmarks';
-import type { ExerciseAnalysisStrategy, Landmark, PoseLandmarks } from '../types';
+import type { ExerciseAnalysisStrategy, PoseLandmarks } from '../types';
 
 export class RightBicepCurlStrategy implements ExerciseAnalysisStrategy {
-    private readonly shoulderR: Landmark;
-    private readonly wristR: Landmark;
-
     private readonly rElbowAngle: number;
+    /** Always >= 0: calculateHorizontalDistance returns an absolute value. */
     private readonly rShoulderWrist: number;
 
     constructor(landmarks: PoseLandmarks) {
-        this.shoulderR = landmarks[POSE.RIGHT_SHOULDER];
-        this.wristR = landmarks[POSE.RIGHT_WRIST];
-
         this.rElbowAngle = AngleCalculator.calculateLandmarksAngle(
             landmarks, POSE.RIGHT_SHOULDER, POSE.RIGHT_ELBOW, POSE.RIGHT_WRIST);
 
-        this.rShoulderWrist = AngleCalculator.calculateHorizontalDistance(this.shoulderR, this.wristR, 3);
+        this.rShoulderWrist = AngleCalculator.calculateHorizontalDistance(
+            landmarks[POSE.RIGHT_SHOULDER], landmarks[POSE.RIGHT_WRIST], 3);
     }
 
     correctForm(): string {
         let bicepGuide = '';
 
-        // The shoulder-angle gate is intentionally absent, matching
-        // LeftBicepCurlStrategy; with it the right arm was far harder to satisfy.
-        if (
-            this.rElbowAngle > 20 && this.rElbowAngle < 60 &&
-            this.rShoulderWrist <= 0.1 && this.rShoulderWrist > -0.1
-        ) {
+        // No shoulder-angle gate here, matching LeftBicepCurlStrategy;
+        // with it the right arm was far harder to satisfy than the left.
+        if (this.rElbowAngle > 20 && this.rElbowAngle < 60 && this.rShoulderWrist <= 0.1) {
             bicepGuide = 'Keep Going!';
         } else {
             if (this.rElbowAngle < 20) {
@@ -38,9 +31,6 @@ export class RightBicepCurlStrategy implements ExerciseAnalysisStrategy {
             }
             if (this.rShoulderWrist > 0.1) {
                 bicepGuide += 'Move your wrist to the Left\n';
-            }
-            if (this.rShoulderWrist < -0.1) {
-                bicepGuide += 'Move your wrist to the Right\n';
             }
         }
 

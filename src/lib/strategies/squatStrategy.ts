@@ -1,15 +1,8 @@
 import { AngleCalculator } from '../angleCalculator';
 import { POSE } from '../landmarks';
-import type { ExerciseAnalysisStrategy, Landmark, PoseLandmarks } from '../types';
+import type { ExerciseAnalysisStrategy, PoseLandmarks } from '../types';
 
 export class SquatStrategy implements ExerciseAnalysisStrategy {
-    private readonly hipL: Landmark;
-    private readonly hipR: Landmark;
-    private readonly kneeL: Landmark;
-    private readonly kneeR: Landmark;
-    private readonly footL: Landmark;
-    private readonly footR: Landmark;
-
     private readonly rKneeHip: number;
     private readonly lKneeHip: number;
     private readonly rKneeFoot: number;
@@ -17,18 +10,18 @@ export class SquatStrategy implements ExerciseAnalysisStrategy {
     private readonly hipAngle: number;
 
     constructor(landmarks: PoseLandmarks) {
-        this.hipL = landmarks[POSE.LEFT_HIP];
-        this.hipR = landmarks[POSE.RIGHT_HIP];
-        this.kneeL = landmarks[POSE.LEFT_KNEE];
-        this.kneeR = landmarks[POSE.RIGHT_KNEE];
-        this.footL = landmarks[POSE.LEFT_FOOT_INDEX];
-        this.footR = landmarks[POSE.RIGHT_FOOT_INDEX];
+        const hipL = landmarks[POSE.LEFT_HIP];
+        const hipR = landmarks[POSE.RIGHT_HIP];
+        const kneeL = landmarks[POSE.LEFT_KNEE];
+        const kneeR = landmarks[POSE.RIGHT_KNEE];
+        const footL = landmarks[POSE.LEFT_FOOT_INDEX];
+        const footR = landmarks[POSE.RIGHT_FOOT_INDEX];
 
-        this.rKneeHip = AngleCalculator.calculateVerticalDistance(this.kneeR, this.hipR, 3);
-        this.lKneeHip = AngleCalculator.calculateVerticalDistance(this.kneeL, this.hipL, 3);
+        this.rKneeHip = AngleCalculator.calculateVerticalDistance(kneeR, hipR, 3);
+        this.lKneeHip = AngleCalculator.calculateVerticalDistance(kneeL, hipL, 3);
 
-        this.rKneeFoot = AngleCalculator.calculateHorizontalDistance(this.kneeR, this.footR, 3);
-        this.lKneeFoot = AngleCalculator.calculateHorizontalDistance(this.kneeL, this.footL, 3);
+        this.rKneeFoot = AngleCalculator.calculateHorizontalDistance(kneeR, footR, 3);
+        this.lKneeFoot = AngleCalculator.calculateHorizontalDistance(kneeL, footL, 3);
 
         const lHipAngle = AngleCalculator.calculateLandmarksAngle(
             landmarks, POSE.LEFT_SHOULDER, POSE.LEFT_HIP, POSE.LEFT_KNEE);
