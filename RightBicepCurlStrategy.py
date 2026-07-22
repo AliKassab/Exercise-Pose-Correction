@@ -31,7 +31,7 @@ class RightBicepCurlStrategy(IExerciseAnalysisStrategy):
     def correct_form(self):
         bicep_guide = ""
 
-        if 20 < self.r_elbow_angle < 60 and 10 < self.r_shoulder_angle < 20 and 0.1 >= self.r_shoulder_wrist > -0.1 :
+        if 20 < self.r_elbow_angle < 60 and 0.1 >= self.r_shoulder_wrist > -0.1 : #and 10 < self.r_shoulder_angle < 20
             bicep_guide = 'Keep Going!'
 
         else:

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Pose Detection</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        img {
+            border: 5px solid #61dafb;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        select, button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #61dafb;
+            border-radius: 5px;
+            background-color: #20232a;
+            color: #61dafb;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-Time Pose Detection</h1>
+        <img id="videoFeed" width="640" height="480" />
+        <button id="startButton">Start Video Feed</button>
+        <select id="exerciseSelect" style="display: none;">
+            <option value="1">Squat</option>
+            <option value="2">Left Bicep Curl</option>
+            <option value="3">Right Bicep Curl</option>
+            <option value="4">Push Up</option>
+        </select>
+    </div>
+
+    <script>
+        const videoFeed = document.getElementById('videoFeed');
+        const exerciseSelect = document.getElementById('exerciseSelect');
+        const startButton = document.getElementById('startButton');
+
+        function updateVideoFeed() {
+            const exerciseId = exerciseSelect.value;
+            videoFeed.src = `/video_feed/${exerciseId}?_=${new Date().getTime()}`;
+        }
+
+        startButton.addEventListener('click', () => {
+            if (videoFeed.style.display === 'none') {
+                videoFeed.style.display = 'block';
+                exerciseSelect.style.display = 'block';
+                startButton.textContent = 'Stop Video Feed';
+                updateVideoFeed();
+            } else {
+                videoFeed.style.display = 'none';
+                exerciseSelect.style.display = 'none';
+                startButton.textContent = 'Start Video Feed';
+                videoFeed.src = ''; // Stop the video feed
+            }
+        });
+
+        exerciseSelect.addEventListener('change', updateVideoFeed);
+    </script>
+</body>
+</html>

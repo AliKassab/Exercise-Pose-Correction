@@ -53,7 +53,9 @@ def generate_frames(exercise_id):
 
 @app.route('/')
 def index():
-    return send_from_directory('', 'index.html')
+    # index.html at the repo root is the browser build served by GitHub Pages;
+    # the desktop app has its own page under templates/.
+    return send_from_directory('templates', 'desktop.html')
 
 @app.route('/video_feed/<int:exercise_id>')
 def video_feed(exercise_id):

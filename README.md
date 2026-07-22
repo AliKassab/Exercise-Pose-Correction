@@ -2,6 +2,11 @@
 
 A real-time exercise form correction application that uses computer vision and pose detection to help users maintain proper form while exercising. The application provides instant feedback on exercise technique using your webcam.
 
+It ships in two forms:
+
+- **Web version** (`index.html`, `css/`, `js/`) — runs entirely in the browser with MediaPipe Tasks Vision. Static files, no server, uses the visitor's own camera. This is what gets hosted, live at <https://www.alikassab.dev/Exercise-Pose-Correction>.
+- **Desktop version** (`main.py`, `templates/desktop.html`) — the original Flask + OpenCV app, which captures the camera of the machine running it.
+
 ## Features
 
 - **Real-time Pose Detection**: Uses MediaPipe to track body movements through your webcam
@@ -43,7 +48,10 @@ Before running the application, ensure you have the following installed:
    pip install flask flask-cors opencv-python mediapipe numpy
    ```
 
-## Usage
+## Usage (desktop version)
+
+Note that `main.py` reads the camera of the machine it runs on, which is why the hosted
+site uses the browser build in `docs/` instead.
 
 1. Run the application:
    ```bash
@@ -67,6 +75,42 @@ Before running the application, ensure you have the following installed:
 
 6. Have fun exercising! 😊
 
+## Web Version (hosted)
+
+The browser build lives at the repository root and needs no Python and no server. Every
+frame is processed on the visitor's device — no video is uploaded anywhere.
+
+Run it locally with any static file server:
+
+```bash
+python -m http.server 5173
+```
+
+Then open `http://localhost:5173`. A camera requires a secure context, so it works on
+`localhost` and over HTTPS, but not from a `file://` path.
+
+### Deploying to GitHub Pages
+
+Under **Settings → Pages**, the source is the `main` branch, `/ (root)` folder. All asset
+paths are relative, so the site works from any sub-path.
+
+### Web version structure
+
+```
+index.html                     # Web interface
+css/style.css                  # Styles
+js/
+├── app.js                     # Render loop and UI wiring (replaces main.py)
+├── poseDetector.js            # MediaPipe Tasks Vision + getUserMedia
+├── angleCalculator.js         # Port of AngleCalculator.py
+├── landmarks.js               # Pose landmark indices
+└── strategies/                # Ports of the four exercise strategies
+```
+
+The strategy ports are line-for-line equivalent to the Python originals: across 200
+randomized landmark sets, all four strategies produce byte-identical guidance text in
+both implementations.
+
 ## How It Works
 
 The application uses the Strategy design pattern to implement different exercise correction algorithms:
@@ -81,7 +125,7 @@ The application uses the Strategy design pattern to implement different exercise
 ```
 Exercise-Pose-Correction/
 ├── main.py                      # Flask application and main entry point
-├── index.html                   # Web interface
+├── templates/desktop.html       # Desktop app's web interface
 ├── PoseDetector.py              # Pose detection using MediaPipe
 ├── AngleCalculator.py           # Utility for calculating body angles
 ├── ExerciseAnalysisStrategy.py  # Abstract base class for exercise strategies
